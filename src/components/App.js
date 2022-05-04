@@ -2,28 +2,21 @@ import React from "react";
 import { data } from "../data";
 import Navbar from "./Navbar";
 import MovieCard from "./MovieCard";
+import { connect } from "react-redux";
 import { addMovies, setShowFavourites } from "../actions";
 
 class App extends React.Component {
   componentDidMount() {
-    const store = this.props.store;
-
-    const subs = store.subscribe(() => {
-      this.forceUpdate();
-    });
-    // console.log("Dispatch");
-    console.log(typeof subs);
-    store.dispatch(addMovies(data));
-    // console.log(store.getState());
+    this.props.dispatch(addMovies(data));
   }
 
   onChangeTab = (val) => {
-    const store = this.props.store;
+    const store = this.props;
     store.dispatch(setShowFavourites(val));
   };
 
   isMovieFavourite = (movie) => {
-    const { movies } = this.props.store.getState();
+    const { movies } = this.props;
     const index = movies.favourites.indexOf(movie);
 
     if (index != -1) {
@@ -33,15 +26,16 @@ class App extends React.Component {
   };
 
   render() {
-    const { movies } = this.props.store.getState();
+    console.log("App.js = ", this.props);
+    const { movies, search } = this.props;
     const { list, favourites, showFavourites } = movies;
-    console.log("store", this.props.store.getState());
+    // console.log("store", this.props.store.getState());
 
     const displayMovies = showFavourites ? favourites : list;
 
     return (
       <div className="App">
-        <Navbar />
+        <Navbar search={search} />
         <div className="main">
           <div className="tabs">
             <div
@@ -62,7 +56,7 @@ class App extends React.Component {
               <MovieCard
                 movie={movie}
                 key={`movie-${index}`}
-                dispatch={this.props.store.dispatch}
+                dispatch={this.props.dispatch}
                 isMovieFavourite={this.isMovieFavourite(movie)}
               />
             ))}
@@ -76,4 +70,11 @@ class App extends React.Component {
   }
 }
 
-export default App;
+function mapStateToProps(state) {
+  return {
+    movies: state.movies,
+    search: state.search,
+  };
+}
+const connectedComponent = connect(mapStateToProps)(App);
+export default connectedComponent;
